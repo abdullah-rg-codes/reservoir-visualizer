@@ -21,8 +21,8 @@ const legend = document.getElementById('legend');
 function parseInput(raw) {
   const parts = raw.trim().split(',');
 
-  if (parts.length < 2) {
-    return { heights: [], error: 'Enter at least two values.' };
+  if (parts.length < 1) {
+    return { heights: [], error: 'Enter at least one value.' };
   }
 
   const heights = [];
@@ -37,73 +37,77 @@ function parseInput(raw) {
   return { heights, error: null };
 }
 
-function trap(height) {
-  let result = 0;
-  const n = height.length;
-  if (n < 1) return result;
-
-  let left = 0;
-  let right = n - 1;
-  let leftMax = height[left];
-  let rightMax = height[right];
-
-  while (left < right) {
-    if (leftMax < rightMax) {
-      left++;
-      leftMax = Math.max(leftMax, height[left]);
-      result += leftMax - height[left];
-    } else {
-      right--;
-      rightMax = Math.max(rightMax, height[right]);
-      result += rightMax - height[right];
-    }
-  }
-  return result;
-}
-
 /**
- * Build a 2D grid showing cell types for SVG rendering.
+ * Prefix-Suffix Algorithm - O(n) time, O(n) space
+ * 
+ * Build a 2D grid showing cell types for SVG rendering and calculate water units.
  * Each cell is one of: 'block' | 'water' | 'empty'
  *
- * @param {number[]} heights
+ * Algorithm:
+ * 1. Pre-compute leftMax[i] = max height from index 0 to i
+ * 2. Pre-compute rightMax[i] = max height from index i to end
+ * 3. For each column: waterLevel[i] = min(leftMax[i], rightMax[i])
+ * 4. Water at column i = max(0, waterLevel[i] - height[i])
+ * 5. Build 2D grid for visualization
+ * 6. Sum all water units
+ *
+ * @param {number[]} heights - array of block heights
  * @returns {{ grid: string[][], maxH: number, waterUnits: number }}
  */
 function buildGrid(heights) {
+  const n = heights.length;
+  
+  // Handle edge cases
+  if (n === 0) {
+    return { grid: [], maxH: 0, waterUnits: 0 };
+  }
+
   const maxH = Math.max(...heights);
-  const cols = heights.length;
+  
+  // Edge case: if max height is 0, no water can be stored
+  if (maxH === 0) {
+    return { grid: [], maxH: 0, waterUnits: 0 };
+  }
 
-  // leftMax[i]  = max height to the left  of i (inclusive)
-  // rightMax[i] = max height to the right of i (inclusive)
-  const leftMax  = new Array(cols).fill(0);
-  const rightMax = new Array(cols).fill(0);
-
-  leftMax[0]        = heights[0];
-  rightMax[cols - 1]= heights[cols - 1];
-
-  for (let i = 1; i < cols; i++) {
+  // Step 1: Pre-compute leftMax[i] = max height from 0 to i (inclusive)
+  const leftMax = new Array(n);
+  leftMax[0] = heights[0];
+  for (let i = 1; i < n; i++) {
     leftMax[i] = Math.max(leftMax[i - 1], heights[i]);
   }
-  for (let i = cols - 2; i >= 0; i--) {
+
+  // Step 2: Pre-compute rightMax[i] = max height from i to n-1 (inclusive)
+  const rightMax = new Array(n);
+  rightMax[n - 1] = heights[n - 1];
+  for (let i = n - 2; i >= 0; i--) {
     rightMax[i] = Math.max(rightMax[i + 1], heights[i]);
   }
 
-  // waterLevel[i] = how high water sits at column i
-  const waterLevel = heights.map((h, i) => Math.min(leftMax[i], rightMax[i]));
+  // Step 3 & 4: Calculate waterLevel and water units for each column
+  const waterLevel = new Array(n);
+  let waterUnits = 0;
+  
+  for (let i = 0; i < n; i++) {
+    waterLevel[i] = Math.min(leftMax[i], rightMax[i]);
+    waterUnits += Math.max(0, waterLevel[i] - heights[i]);
+  }
 
-  // Build grid row by row (row 0 = top)
-  // grid[row][col] → 'block' | 'water' | 'empty'
+  // Step 5: Build 2D grid for visualization (row by row, top to bottom)
   const grid = [];
   for (let row = 0; row < maxH; row++) {
-    const rowHeight = maxH - row;         // which height level this row represents
+    const rowHeight = maxH - row;  // which height level this row represents
     const cells = heights.map((h, col) => {
-      if (rowHeight <= h)               return 'block';
-      if (rowHeight <= waterLevel[col]) return 'water';
-      return 'empty';
+      if (rowHeight <= h) {
+        return 'block';
+      } else if (rowHeight <= waterLevel[col]) {
+        return 'water';
+      } else {
+        return 'empty';
+      }
     });
     grid.push(cells);
   }
 
-  const waterUnits = trap(heights);
   return { grid, maxH, waterUnits };
 }
 
@@ -201,11 +205,26 @@ function solve() {
     return;
   }
 
+  // Handle edge case: empty input
+  if (heights.length === 0) {
+    showError('Please enter at least one value.');
+    return;
+  }
+
   const { grid, maxH, waterUnits } = buildGrid(heights);
 
-  // Edge: all same height → no water
+  // Edge case: all zeros or single value → no water stored
   if (maxH === 0) {
     showError('All block heights are 0 — no water can be stored.');
+    return;
+  }
+
+  // Edge case: single value → no water (can't store water between blocks)
+  if (heights.length === 1) {
+    resultValue.textContent = '0 units';
+    resultBadge.classList.remove('hidden');
+    legend.classList.add('hidden');
+    svgWrapper.innerHTML = '<p class="placeholder-text">Single block: no water can be trapped</p>';
     return;
   }
 
