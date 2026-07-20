@@ -41,15 +41,6 @@ function parseInput(raw) {
  * Prefix-Suffix Algorithm - O(n) time, O(n) space
  * 
  * Build a 2D grid showing cell types for SVG rendering and calculate water units.
- * Each cell is one of: 'block' | 'water' | 'empty'
- *
- * Algorithm:
- * 1. Pre-compute leftMax[i] = max height from index 0 to i
- * 2. Pre-compute rightMax[i] = max height from index i to end
- * 3. For each column: waterLevel[i] = min(leftMax[i], rightMax[i])
- * 4. Water at column i = max(0, waterLevel[i] - height[i])
- * 5. Build 2D grid for visualization
- * 6. Sum all water units
  *
  * @param {number[]} heights - array of block heights
  * @returns {{ grid: string[][], maxH: number, waterUnits: number }}

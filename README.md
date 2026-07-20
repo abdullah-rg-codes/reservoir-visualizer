@@ -1,16 +1,25 @@
 # reservoir-visualizer
-Interactive SVG visualizer for reservoir water storage between elevation blocks. Built with vanilla JavaScript, HTML &amp; CSS. Input block heights, compute trapped water units, and watch the solution render in real-time. O(n) two-pointer approach. Zero dependencies.
+Interactive SVG visualizer for reservoir water storage between elevation blocks. Built with vanilla JavaScript, HTML & CSS. Input block heights, compute trapped water units, and watch the solution render in real-time. Prefix-Suffix approach. Zero dependencies.
 
 ## Algorithm
 
-Uses the **two-pointer approach** — O(n) time, O(1) space.
+Uses the **Prefix-Suffix approach** — O(n) time, O(n) space.
 
 ### How it works
 
-1. Two pointers start at both ends of the array.
-2. The pointer on the shorter side moves inward.
-3. Water at each position = `min(leftMax, rightMax) - height[i]`.
-4. Accumulate positive differences as trapped water.
+1. **Pre-compute leftMax[i]:** Maximum height from index 0 to i (inclusive)
+2. **Pre-compute rightMax[i]:** Maximum height from index i to end (inclusive)
+3. **Calculate waterLevel[i]:** For each position, `waterLevel[i] = min(leftMax[i], rightMax[i])`
+4. **Compute trapped water:** Water at position i = `max(0, waterLevel[i] - height[i])`
+5. **Build 2D grid:** Create visualization grid marking 'block', 'water', and 'empty' cells
+6. **Sum total water:** Accumulate water units across all positions
+
+### Why this approach?
+
+- Single algorithm solves both water calculation and visualization
+- Pre-computed arrays enable efficient grid rendering
+- Explicitly tracks water position for SVG visualization
+- Clean separation of concerns with clear algorithm steps
 
 ## Project Structure
 
