@@ -1,6 +1,8 @@
 # reservoir-visualizer
 Interactive SVG visualizer for reservoir water storage between elevation blocks. Built with vanilla JavaScript, HTML & CSS. Input block heights, compute trapped water units, and watch the solution render in real-time. Prefix-Suffix approach. Zero dependencies.
 
+**🌐 Live Demo:** [https://abdullah-rg-codes.github.io/reservoir-visualizer/](https://abdullah-rg-codes.github.io/reservoir-visualizer/)
+
 ## Algorithm
 
 Uses the **Prefix-Suffix approach** — O(n) time, O(n) space.
@@ -24,21 +26,36 @@ Uses the **Prefix-Suffix approach** — O(n) time, O(n) space.
 ## Project Structure
 
 ```
-water-tank/
-├── index.html   — markup and layout
-├── style.css    — all styling (dark theme, responsive)
-├── script.js    — algorithm + SVG rendering logic
-└── README.md    — this file
+reservoir-visualizer/
+├── index.html       — HTML markup and layout
+├── style.css        — All styling (light theme, responsive)
+├── script.js        — Prefix-Suffix algorithm + SVG rendering logic
+├── README.md        — This file
+└── water-tank/      — Legacy implementation folder
+    ├── index.html
+    ├── style.css
+    ├── script.js
+    └── README.md
 ```
 
-## Running locally
+## Running
 
-No build step needed — open `index.html` directly in a browser.
+**Online:** Visit [https://abdullah-rg-codes.github.io/reservoir-visualizer/](https://abdullah-rg-codes.github.io/reservoir-visualizer/)
+
+**Locally:** No build step needed — open `index.html` directly in your browser.
 
 ## Complexity
 
-| | |
-|---|---|
-| Time  | O(n) |
-| Space | O(1) |
-| Algorithm | Two-pointer |
+| Metric | Value |
+|--------|-------|
+| Time Complexity | O(n) |
+| Space Complexity | O(n) |
+| Algorithm | Prefix-Suffix |
+
+### Complexity Breakdown
+
+- **Pre-compute leftMax:** O(n) time, O(n) space
+- **Pre-compute rightMax:** O(n) time, O(n) space
+- **Calculate waterLevel & waterUnits:** O(n) time, O(n) space
+- **Build grid for visualization:** O(n × m) time, O(n × m) space (m = max height)
+- **Overall:** O(n) passes with O(n) space trade-off for clear grid representation
