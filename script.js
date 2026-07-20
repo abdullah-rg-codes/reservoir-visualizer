@@ -1,14 +1,22 @@
-/**
- * Two-pointer approach — O(n) time, O(1) space.
- * Matches the Java solution provided.
- *
- */
-// ── DOM refs ─────────────────────────────────────────────────
-const inputEl = document.getElementById("heightInput");
-const solveBtn = document.getElementById("solveBtn");
-const resultBadge = document.getElementById("resultBadge");
-const resultValue = document.getElementById("resultValue");
-const errorMsg = document.getElementById("errorMsg");
+// Constants 
+const CELL_SIZE   = 36;   // px — width & height of each grid cell
+const CELL_GAP    = 2;    // px — gap between cells
+const COLORS = {
+  block:   '#1e293b',
+  water:   '#0ea5e9',
+  waterFg: 'rgba(14,165,233,0.18)',
+  empty:   '#f5f7fa',
+  border:  '#d0d7e5',
+};
+
+// DOM refs
+const inputEl = document.getElementById('heightInput');
+const solveBtn = document.getElementById('solveBtn');
+const svgWrapper = document.getElementById('svgWrapper');
+const resultBadge = document.getElementById('resultBadge');
+const resultValue = document.getElementById('resultValue');
+const errorMsg = document.getElementById('errorMsg');
+const legend = document.getElementById('legend');
 
 function parseInput(raw) {
   const parts = raw.trim().split(',');
@@ -99,12 +107,83 @@ function buildGrid(heights) {
   return { grid, maxH, waterUnits };
 }
 
-// ── UI helpers ────────────────────────────────────────────────
+/**
+ * Render SVG visualization
+ * @param {string[][]} grid
+ * @param {number[]}   heights original height array
+ * @returns {string} SVG markup
+ */
+function renderSVG(grid, heights) {
+  const rows      = grid.length;
+  const cols      = heights.length;
+  const cellStep  = CELL_SIZE + CELL_GAP;
+
+  // Reserve left margin for Y-axis labels
+  const labelW    = 28;
+  const svgW      = labelW + cols * cellStep - CELL_GAP + 4;
+  const svgH      = rows * cellStep - CELL_GAP + 28; // +28 for X-axis labels
+
+  const ns = 'http://www.w3.org/2000/svg';
+
+  let rects = '';
+
+  // Grid cells
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const type = grid[r][c];
+      const x    = labelW + c * cellStep;
+      const y    = r * cellStep;
+      let fill   = COLORS.empty;
+      let stroke = COLORS.border;
+
+      if (type === 'block') {
+        fill   = COLORS.block;
+        stroke = '#2a3f5a';
+      } else if (type === 'water') {
+        fill   = COLORS.water;
+        stroke = 'rgba(14,165,233,0.4)';
+      }
+
+      rects += `<rect x="${x}" y="${y}" width="${CELL_SIZE}" height="${CELL_SIZE}"
+        fill="${fill}" stroke="${stroke}" stroke-width="1" rx="2"/>`;
+    }
+  }
+
+  // Y-axis labels (height numbers on the left)
+  let yLabels = '';
+  for (let r = 0; r < rows; r++) {
+    const heightVal = rows - r;
+    const y = r * cellStep + CELL_SIZE / 2 + 4;
+    yLabels += `<text x="${labelW - 6}" y="${y}" text-anchor="end"
+      font-size="10" fill="${COLORS.border}" font-family="monospace">${heightVal}</text>`;
+  }
+
+  // X-axis labels (column index below grid)
+  let xLabels = '';
+  for (let c = 0; c < cols; c++) {
+    const x = labelW + c * cellStep + CELL_SIZE / 2;
+    const y = rows * cellStep + 16;
+    xLabels += `<text x="${x}" y="${y}" text-anchor="middle"
+      font-size="10" fill="${COLORS.border}" font-family="monospace">${heights[c]}</text>`;
+  }
+
+  return `<svg xmlns="${ns}" viewBox="0 0 ${svgW} ${svgH}"
+    aria-label="Water tank visualisation" role="img">
+    <title>Water tank grid</title>
+    ${yLabels}
+    ${rects}
+    ${xLabels}
+  </svg>`;
+}
+
+// UI helpers
 function showError(msg) {
   errorMsg.textContent = msg;
   errorMsg.classList.remove('hidden');
   resultBadge.classList.add('hidden');
+  legend.classList.add('hidden');
   inputEl.classList.add('invalid');
+  svgWrapper.innerHTML = '<p class="placeholder-text">Fix the input to see the visualisation</p>';
 }
 
 function clearError() {
@@ -112,7 +191,7 @@ function clearError() {
   inputEl.classList.remove('invalid');
 }
 
-// ── Main solve flow ───────────────────────────────────────────
+// Main solve flow
 function solve() {
   clearError();
 
@@ -130,9 +209,13 @@ function solve() {
     return;
   }
 
+  // Render SVG
+  svgWrapper.innerHTML = renderSVG(grid, heights);
+
   // Show result
   resultValue.textContent = `${waterUnits} unit${waterUnits !== 1 ? 's' : ''}`;
   resultBadge.classList.remove('hidden');
+  legend.classList.remove('hidden');
 
   // Subtle animation on result
   resultBadge.style.animation = 'none';
@@ -163,5 +246,5 @@ document.querySelectorAll('.btn-example').forEach((btn) => {
   });
 });
 
-// ── Run on load with default input ───────────────────────────
+//load with default input
 solve();
