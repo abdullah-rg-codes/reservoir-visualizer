@@ -30,12 +30,7 @@ reservoir-visualizer/
 ├── index.html       — HTML markup and layout
 ├── style.css        — All styling (light theme, responsive)
 ├── script.js        — Prefix-Suffix algorithm + SVG rendering logic
-├── README.md        — This file
-└── water-tank/      — Legacy implementation folder
-    ├── index.html
-    ├── style.css
-    ├── script.js
-    └── README.md
+└── README.md        — This file
 ```
 
 ## Running
@@ -51,11 +46,3 @@ reservoir-visualizer/
 | Time Complexity | O(n) |
 | Space Complexity | O(n) |
 | Algorithm | Prefix-Suffix |
-
-### Complexity Breakdown
-
-- **Pre-compute leftMax:** O(n) time, O(n) space
-- **Pre-compute rightMax:** O(n) time, O(n) space
-- **Calculate waterLevel & waterUnits:** O(n) time, O(n) space
-- **Build grid for visualization:** O(n × m) time, O(n × m) space (m = max height)
-- **Overall:** O(n) passes with O(n) space trade-off for clear grid representation
